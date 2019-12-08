@@ -5,8 +5,10 @@ from inverted_index import InvertedIndex
 from id_service import IDService
 from db_service import DBService
 from index_to_bytes import IndexToByteConverter
+from compress_index import IndexCompressor
 
 def main():
+    # if uncompressed index not exists
     if not os.path.exists('./uncompressed_index'):
         db_service = DBService("msuspider.db")
 
@@ -23,6 +25,7 @@ def main():
         converter = IndexToByteConverter(inverted_index.index)
         converter.build()
 
+    # if in-memory index doesnt exist
     if not os.path.exists('./index.pickle'):
         db_service = DBService("msuspider.db")
         inverted_index = InvertedIndex(db_service.get_texts())
@@ -34,9 +37,16 @@ def main():
         with open('index.pickle', 'rb') as f:
             inv_index = pickle.load(f)
 
+    # if compressed index deosnt exist
+    if not os.path.exists('./compressed_index'):
+        index_compressor = IndexCompressor(inv_index)
+        index_compressor.build_delta()        
+
     converter = IndexToByteConverter()
     print(converter.get_word_postings('ректор')[1])
     print(inv_index['ректор'][1])
+
+    
 
 
 
